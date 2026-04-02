@@ -20,38 +20,31 @@ jobs:
       - name: Install Dependencies
         run: |
           brew update
-          brew install libplist xmlstarlet libxml2 jq curl git zip unzip xz zstd gzip bzip2
+          # coreutils provides a standard realpath which Azule needs
+          brew install libplist xmlstarlet libxml2 jq curl git zip unzip xz zstd gzip bzip2 coreutils
 
       - name: Setup Azule
         run: |
           git clone https://github.com/Al4ise/Azule ~/Azule
           chmod +x ~/Azule/azule
-          # We don't add to PATH yet, we'll use absolute path or handle it in the script
 
       - name: Download Files
         run: |
           curl -L "${{ github.event.inputs.ipa_url }}" -o original.ipa
-          curl -L "${{ github.event.inputs.dylib_url }}" -o inject.dylib
-
-      - name: Prepare Injection
-        run: |
-          # Azule sometimes misidentifies .dylib as .deb if not handled carefully.
-          # We will use the -f flag which Azule uses to specify files to import.
-          # We ensure the file extension is strictly .dylib
-          mv inject.dylib tweak.dylib
+          curl -L "${{ github.event.inputs.dylib_url }}" -o tweak.dylib
 
       - name: Inject Dylib
         run: |
-          # Use absolute path to azule and run injection
-          # -i: input ipa
-          # -f: file to inject (our dylib)
-          # -o: output name
-          ~/Azule/azule -i original.ipa -f tweak.dylib -o modified.ipa
+          # We use absolute paths to avoid issues with realpath in Azule
+          IPA_PATH="$(pwd)/original.ipa"
+          TWEAK_PATH="$(pwd)/tweak.dylib"
+          OUT_PATH="$(pwd)/modified.ipa"
+          
+          # Run Azule with absolute paths
+          ~/Azule/azule -i "$IPA_PATH" -f "$TWEAK_PATH" -o "$OUT_PATH"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: modified-ipa
           path: "*.ipa"
-          # Using wildcard because Azule might name it original+tweak.ipa or modified.ipa
-          # depending on the version and flags.
