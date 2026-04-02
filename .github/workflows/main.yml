@@ -1,0 +1,44 @@
+name: Inject Dylib into IPA
+
+on:
+  workflow_dispatch:
+    inputs:
+      ipa_url:
+        description: 'URL to the IPA file'
+        required: true
+      dylib_url:
+        description: 'URL to the .dylib file'
+        required: true
+
+jobs:
+  inject:
+    runs-on: ubuntu-latest
+    steps:
+      - name: Checkout
+        uses: actions/checkout@v4
+
+      - name: Install Dependencies
+        run: |
+          sudo apt-get update
+          sudo apt-get install -y libplist-utils xmlstarlet libxml2-utils jq curl git zip unzip xz-utils zstd gzip bzip2
+
+      - name: Setup Azule
+        run: |
+          git clone https://github.com/Al4ise/Azule ~/Azule
+          chmod +x ~/Azule/azule
+          echo "$HOME/Azule" >> $GITHUB_PATH
+
+      - name: Download Files
+        run: |
+          curl -L "${{ github.event.inputs.ipa_url }}" -o original.ipa
+          curl -L "${{ github.event.inputs.dylib_url }}" -o inject.dylib
+
+      - name: Inject Dylib
+        run: |
+          azule -i original.ipa -f inject.dylib -o modified.ipa
+
+      - name: Upload Artifact
+        uses: actions/upload-artifact@v4
+        with:
+          name: modified-ipa
+          path: modified.ipa
