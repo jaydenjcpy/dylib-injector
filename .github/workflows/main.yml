@@ -1,4 +1,4 @@
-name: Inject Dylib into IPA
+name: Inject Dylib into IPA (macOS)
 
 on:
   workflow_dispatch:
@@ -12,15 +12,15 @@ on:
 
 jobs:
   inject:
-    runs-on: ubuntu-latest
+    runs-on: macos-latest
     steps:
       - name: Checkout
         uses: actions/checkout@v4
 
       - name: Install Dependencies
         run: |
-          sudo apt-get update
-          sudo apt-get install -y libplist-utils xmlstarlet libxml2-utils jq curl git zip unzip xz-utils zstd gzip bzip2
+          brew update
+          brew install libplist xmlstarlet libxml2 jq curl git zip unzip xz zstd gzip bzip2
 
       - name: Setup Azule
         run: |
