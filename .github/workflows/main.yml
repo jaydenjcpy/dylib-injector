@@ -26,19 +26,32 @@ jobs:
         run: |
           git clone https://github.com/Al4ise/Azule ~/Azule
           chmod +x ~/Azule/azule
-          echo "$HOME/Azule" >> $GITHUB_PATH
+          # We don't add to PATH yet, we'll use absolute path or handle it in the script
 
       - name: Download Files
         run: |
           curl -L "${{ github.event.inputs.ipa_url }}" -o original.ipa
           curl -L "${{ github.event.inputs.dylib_url }}" -o inject.dylib
 
+      - name: Prepare Injection
+        run: |
+          # Azule sometimes misidentifies .dylib as .deb if not handled carefully.
+          # We will use the -f flag which Azule uses to specify files to import.
+          # We ensure the file extension is strictly .dylib
+          mv inject.dylib tweak.dylib
+
       - name: Inject Dylib
         run: |
-          azule -i original.ipa -f inject.dylib -o modified.ipa
+          # Use absolute path to azule and run injection
+          # -i: input ipa
+          # -f: file to inject (our dylib)
+          # -o: output name
+          ~/Azule/azule -i original.ipa -f tweak.dylib -o modified.ipa
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: modified-ipa
-          path: modified.ipa
+          path: "*.ipa"
+          # Using wildcard because Azule might name it original+tweak.ipa or modified.ipa
+          # depending on the version and flags.
