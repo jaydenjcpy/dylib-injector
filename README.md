@@ -1,5 +1,5 @@
 ## dylib-injector
-A tool that injects .dylib files into .ipa files througha Github actions script
+A tool that injects .dylib files into decrypted .ipa files througha Github actions script
 
 ## How to use
 
@@ -12,4 +12,4 @@ A tool that injects .dylib files into .ipa files througha Github actions script
 7. Click on the link to download the zip file, then unzip it to get your injected ipa file
 
 ## Credits
-[Azule](https://github.com/mpelteshki/Azule)
+[Azule](https://github.com/mpelteshki/Azule) is the tool used in this repo to inject .dylibs into ipa files
