@@ -35,16 +35,21 @@ jobs:
 
       - name: Inject Dylib
         run: |
-          # We use absolute paths to avoid issues with realpath in Azule
+          # Define absolute paths
           IPA_PATH="$(pwd)/original.ipa"
           TWEAK_PATH="$(pwd)/tweak.dylib"
-          OUT_PATH="$(pwd)/modified.ipa"
+          # Azule requires -o to be a directory, not a filename
+          OUT_DIR="$(pwd)/output"
           
-          # Run Azule with absolute paths
-          ~/Azule/azule -i "$IPA_PATH" -f "$TWEAK_PATH" -o "$OUT_PATH"
+          mkdir -p "$OUT_DIR"
+          
+          # Run Azule
+          ~/Azule/azule -i "$IPA_PATH" -f "$TWEAK_PATH" -o "$OUT_DIR"
 
       - name: Upload Artifact
         uses: actions/upload-artifact@v4
         with:
           name: modified-ipa
-          path: "*.ipa"
+          # Azule names the file automatically (e.g., original_patched.ipa)
+          # We upload everything inside the output folder
+          path: output/*.ipa
